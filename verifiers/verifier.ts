@@ -1,4 +1,7 @@
-const ethers = require("ethers");
+import ethers from "ethers";
+import { Contract } from "@ethersproject/contracts";
+import { BigNumber } from "@ethersproject/bignumber";
+import { Provider } from "@ethersproject/providers";
 
 import { abi as bondChainA } from "./abis/bondChainA.json";
 import { abi as bondChainB } from "./abis/bondChainB.json";
@@ -7,7 +10,7 @@ import {
   chainBNodeUrl,
   contractAddressA,
   contractAddressB,
-} from "./config.js";
+} from "./config";
 
 // Connect to providers for Chain A and Chain B
 const providerChainA = new ethers.providers.JsonRpcProvider(chainANodeUrl);
@@ -37,7 +40,7 @@ async function listenForEnterCooldownEvent() {
 
   for (const event of events) {
     // Get bondID from the event
-    const bondId = event.args.bondID;
+    const bondId = BigNumber.from(0);
 
     // Check isCooldown on Chain A
     const isCooldown = await isCooldownOnChainA(bondId);
@@ -57,7 +60,7 @@ async function listenForEnterCooldownEvent() {
 }
 
 // Function to check isCooldown on Chain A
-async function isCooldownOnChainA(bondId) {
+async function isCooldownOnChainA(bondId: BigNumber) {
   // Call isCooldown function on Chain A
   const isCooldown = await contractA.isCooldown(bondId);
 
@@ -65,7 +68,7 @@ async function isCooldownOnChainA(bondId) {
 }
 
 // Function to check isRepaid on Chain B
-async function isRepaidOnChainB(bondId) {
+async function isRepaidOnChainB(bondId: BigNumber) {
   // Call isRepaid function on Chain B
   const isRepaid = await contractB.isRepaid(bondId);
 
@@ -73,11 +76,11 @@ async function isRepaidOnChainB(bondId) {
 }
 
 // Function to make dispute
-async function makeDispute(bondId) {
+async function makeDispute(bondId: BigNumber) {
   try {
     // make dispute here
   } catch (error) {
-    console.error("Error making dispute:", error.message);
+    console.error("Error making dispute:");
   }
 }
 
