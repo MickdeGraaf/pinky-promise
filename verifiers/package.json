@@ -1,0 +1,10 @@
+{
+  "main": "verifier.js",
+  "dependencies": {
+    "ethers": "^6.8.1"
+  },
+  "scripts": {
+    "verifier": "node verifier.js"
+  },
+  "devDependencies": {}
+}
