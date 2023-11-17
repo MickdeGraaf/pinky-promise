@@ -4,7 +4,7 @@
     "ethers": "^6.8.1"
   },
   "scripts": {
-    "verifier": "node verifier.js"
+    "verifier": "node verifier.ts"
   },
   "devDependencies": {}
 }
