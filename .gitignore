@@ -7,6 +7,8 @@ out/
 /broadcast/*/31337/
 /broadcast/**/dry-run/
 
+verifiers/node_modules/
+
 # Docs
 docs/
 
