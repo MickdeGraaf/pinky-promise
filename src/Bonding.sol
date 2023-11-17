@@ -12,6 +12,8 @@ contract Bonding {
         uint256 disputeLiveness;
     }
 
+    event EnterCooldown(uint256 bondId, uint256 cooldownEnd);
+
     Bond[] public bonds;
 
     function createBond(
@@ -38,5 +40,9 @@ contract Bonding {
             // ERC20
         }
         
+    }
+
+    function isCooldown(uint256 bondId) external view returns (bool) {
+      return true;
     }
 }
