@@ -98,12 +98,12 @@ contract Bonding {
         return bondsOfOwner[owner];
     }
 
-    function getBondsOfOwner(address owner) external view returns (Bond[] memory) {
+    function getBondsOfOwner(address owner) external view returns (Bond[] memory bonds_, uint256[] memory indexes_) {
         uint256[] memory indexes = bondsOfOwner[owner];
         Bond[] memory _bonds = new Bond[](indexes.length);
         for (uint256 i = 0; i < indexes.length; i++) {
             _bonds[i] = bonds[indexes[i]];
         }
-        return _bonds;
+        return (_bonds, indexes);
     }
 }
