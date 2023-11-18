@@ -45,7 +45,7 @@ const ManageBond = () => {
 
   const hasOpenLoan = false;
 
-  const bondState : "cooledDown" | "coolingDown" | "active" | "withdrawn" = "active";
+  const bondState : "cooledDown" | "coolingDown" | "active" | "withdrawn" = "coolingDown";
 
   const bondAction = returnBondAction(Number(bondId), bondState, hasOpenLoan);
 
