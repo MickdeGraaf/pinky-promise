@@ -1,13 +1,23 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 contract Bonding {
+    // struct Verifier {
+    //     address addressOnDestChain;
+    //     address tokenOnDestChain; // address(0) for Native on dest chain
+    //     uint256 value;
+    //     uint256 chainId;
+    // }
+
     struct Bond {
-      address owner;
+        address owner;
         address token;
         uint256 amount;
         uint256 cooldownDuration;
-        bytes verifier;
+        bytes verifier; // Verifier encoded
         // Uma params
         uint256 disputeAmount;
         uint256 disputeLiveness;
@@ -16,6 +26,9 @@ contract Bonding {
     event EnterCooldown(uint256 bondId, uint256 cooldownEnd);
 
     Bond[] public bonds;
+
+    //bondId => timestamp
+    mapping(uint256 => uint256) public cooldownEnd;
 
     modifier onlyOwner(uint256 bondId) {
         require(msg.sender == bonds[bondId].owner, "Bonding: not owner");
@@ -46,14 +59,35 @@ contract Bonding {
             require(msg.value == amount, "Bonding: ETH amount mismatch");
         } else {
             // ERC20
+            SafeERC20.safeTransferFrom(IERC20(token), msg.sender, address(this), amount);
         }
     }
 
     function isCooldown(uint256 bondId) external view returns (bool) {
-        return true;
+        require(bondId < bonds.length, "Bonding: invalid bondId");
+        return cooldownEnd[bondId] > 0 ? block.timestamp < cooldownEnd[bondId] : false;
     }
 
-    function triggerCooldown(uint256 bondId) external onlyOwner(bondId) {}
+    function triggerCooldown(uint256 bondId) external onlyOwner(bondId) {
+        require(cooldownEnd[bondId] == 0, "Bonding: already in cooldown");
+        cooldownEnd[bondId] = block.timestamp + bonds[bondId].cooldownDuration;
 
-    function withdraw(uint256 bondId) external onlyOwner(bondId) {}
+        emit EnterCooldown(bondId, cooldownEnd[bondId]);
+    }
+
+    function withdraw(uint256 bondId) external onlyOwner(bondId) {
+        require(cooldownEnd[bondId] < block.timestamp && cooldownEnd[bondId] > 0, "Bonding: still in cooldown");
+        Bond storage bond = bonds[bondId];
+        if (address(bond.token) == address(0)) {
+            // ETH
+            payable(msg.sender).transfer(bond.amount);
+        } else {
+            // ERC20
+            SafeERC20.safeTransfer(IERC20(bond.token), msg.sender, bond.amount);
+        }
+    }
+
+    function getBondsLength() external view returns (uint256) {
+        return bonds.length;
+    }
 }
