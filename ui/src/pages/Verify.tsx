@@ -2,7 +2,7 @@ import react from 'react';
 
 const Verify = () => {
     return (
-        <div>Verify</div>
+        <div>Run the script lmao</div>
     )
 };
 
