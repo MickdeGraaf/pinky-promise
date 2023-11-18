@@ -53,4 +53,6 @@ contract Bonding {
     }
 
     function triggerCooldown(uint256 bondId) external onlyOwner(bondId) {}
+
+    function withdraw(uint256 bondId) external onlyOwner(bondId) {}
 }
