@@ -106,4 +106,8 @@ contract Bonding {
         }
         return (_bonds, indexes);
     }
+
+    function fetchBond(uint256 bondId) external view returns (Bond memory) {
+        return bonds[bondId];
+    }
 }
