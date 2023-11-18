@@ -1,13 +1,24 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 contract Bonding {
+
+    // struct Verifier {
+    //     address addressOnDestChain;
+    //     address tokenOnDestChain; // address(0) for Native on dest chain
+    //     uint256 value;
+    //     uint256 chainId;
+    // }
+
     struct Bond {
-      address owner;
+        address owner;
         address token;
         uint256 amount;
         uint256 cooldownDuration;
-        bytes verifier;
+        bytes verifier; // Verifier encoded
         // Uma params
         uint256 disputeAmount;
         uint256 disputeLiveness;
