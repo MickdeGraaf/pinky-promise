@@ -12,6 +12,7 @@ mainnet = "${MAINNET_RPC_URL}"
 
 [etherscan]
 mainnet = { key = "${MAINNET_SCAN_API_KEY}", url = "${MAINNET_ETHERSCAN_VERIFIER_URL}" }
+goerli = { key = "${GOERLI_SCAN_API_KEY}", }
 
 [invariant]
 runs = 2000
