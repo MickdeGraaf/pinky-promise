@@ -28,6 +28,9 @@ contract Bonding {
 
     Bond[] public bonds;
 
+    //bondId => timestamp
+    mapping(uint256 => uint256) public cooldownEnd;
+
     modifier onlyOwner(uint256 bondId) {
         require(msg.sender == bonds[bondId].owner, "Bonding: not owner");
         _;
@@ -57,14 +60,31 @@ contract Bonding {
             require(msg.value == amount, "Bonding: ETH amount mismatch");
         } else {
             // ERC20
+            SafeERC20.safeTransferFrom(IERC20(token), msg.sender, address(this), amount);
         }
     }
 
     function isCooldown(uint256 bondId) external view returns (bool) {
-        return true;
+        require(bondId < bonds.length, "Bonding: invalid bondId");
+        return cooldownEnd[bondId] > 0 ? block.timestamp < cooldownEnd[bondId] : false;
     }
 
-    function triggerCooldown(uint256 bondId) external onlyOwner(bondId) {}
+    function triggerCooldown(uint256 bondId) external onlyOwner(bondId) {
+        require(cooldownEnd[bondId] == 0, "Bonding: already in cooldown");
+        cooldownEnd[bondId] = block.timestamp + bonds[bondId].cooldownDuration;
 
-    function withdraw(uint256 bondId) external onlyOwner(bondId) {}
+        emit EnterCooldown(bondId, cooldownEnd[bondId]);
+    }
+
+    function withdraw(uint256 bondId) external onlyOwner(bondId) {
+        require(cooldownEnd[bondId] < block.timestamp, "Bonding: still in cooldown");
+        Bond storage bond = bonds[bondId];
+        if (address(bond.token) == address(0)) {
+            // ETH
+            payable(msg.sender).transfer(bond.amount);
+        } else {
+            // ERC20
+            SafeERC20.safeTransfer(IERC20(bond.token), msg.sender, bond.amount);
+        }
+    }
 }
