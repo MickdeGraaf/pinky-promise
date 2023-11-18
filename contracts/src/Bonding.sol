@@ -76,7 +76,7 @@ contract Bonding {
     }
 
     function withdraw(uint256 bondId) external onlyOwner(bondId) {
-        require(cooldownEnd[bondId] < block.timestamp, "Bonding: still in cooldown");
+        require(cooldownEnd[bondId] < block.timestamp && cooldownEnd[bondId] > 0, "Bonding: still in cooldown");
         Bond storage bond = bonds[bondId];
         if (address(bond.token) == address(0)) {
             // ETH
