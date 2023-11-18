@@ -60,4 +60,10 @@ contract OrderFulfiller {
         }
         orderRepaid[bondIdToOrderId[bondId]] = true;
     }
+
+    function isRepaid(uint256 bondId) external returns (bool){
+      return !orderFulfilled || orderRepaid[bondId];
+
+    }
+
 }
