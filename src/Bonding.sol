@@ -16,7 +16,13 @@ contract Bonding {
 
     Bond[] public bonds;
 
+    modifier onlyOwner(uint256 bondId) {
+        require(msg.sender == bonds[bondId].owner, "Bonding: not owner");
+        _;
+    }
+
     function createBond(
+        address owner,
         address token,
         uint256 amount,
         uint256 cooldownDuration,
@@ -26,6 +32,7 @@ contract Bonding {
     ) external payable {
         Bond storage bond = bonds.push();
 
+        bond.owner = owner;
         bond.token = token;
         bond.amount = amount;
         bond.cooldownDuration = cooldownDuration;
@@ -33,16 +40,17 @@ contract Bonding {
         bond.disputeAmount = disputeAmount;
         bond.disputeLiveness = disputeLiveness;
 
-        if(address(token) == address(0)) {
+        if (address(token) == address(0)) {
             // ETH
             require(msg.value == amount, "Bonding: ETH amount mismatch");
         } else {
             // ERC20
         }
-        
     }
 
     function isCooldown(uint256 bondId) external view returns (bool) {
-      return true;
+        return true;
     }
+
+    function triggerCooldown(uint256 bondId) external onlyOwner(bondId) {}
 }
