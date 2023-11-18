@@ -86,4 +86,8 @@ contract Bonding {
             SafeERC20.safeTransfer(IERC20(bond.token), msg.sender, bond.amount);
         }
     }
+
+    function getBondsLength() external view returns (uint256) {
+        return bonds.length;
+    }
 }
