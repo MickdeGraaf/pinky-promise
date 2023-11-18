@@ -9,7 +9,7 @@ import contracts from "../config/contracts";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { switchNetwork, writeContract } from "@wagmi/core";
 import BondingABI from "../abis/Bonding.json";
-import { parseEther } from "viem";
+import { encodeAbiParameters, encodePacked, parseEther } from "viem";
 
 
 interface CreateBondModalProps {
@@ -20,7 +20,7 @@ interface CreateBondModalProps {
   const CreateBondModal: React.FC<CreateBondModalProps> = ({ isOpen, onClose }) => {
 
     const [cooldown, setCooldown] = useState(3600); // cooldown in seconds
-    const [amount, setAmount] = useState("1"); // amount in eth
+    const [amount, setAmount] = useState("0.1"); // amount in eth
     const [chainId, setChainId] = useState("1"); // chain id
     const { address, isConnecting, isDisconnected } = useAccount()
     const connectModal = useConnectModal();
@@ -79,8 +79,21 @@ interface CreateBondModalProps {
     //     bytes memory verifier,
     //     uint256 disputeAmount,
     //     uint256 disputeLiveness
-    // ) 
+    // )
+    
+      // abi encode verifier
+      // @ts-ignore
+      const destinationContract = contracts.fulfillers[Number(chainId)] as `0x${string}`;
 
+      if(typeof destinationContract == undefined) {
+        alert("No fulfiller for this chain");
+        return;
+      }
+      
+      const verifier = encodeAbiParameters([{name: "x", type: "uint256"}, {name: "y", type: "address"}], [BigInt(chainId), destinationContract]);
+      // const verifier = encodeAbiParameters({x: "uint256", y: "address"}, [BigInt(chainId), destinationContract]);
+      // const verifier = encodePacked(["uint256", "address"], [BigInt(chainId), destinationContract]);
+      console.log(verifier);
       // Send tx
       const tx = await writeContract({
         address: contracts.bonding as `0x${string}`,
@@ -91,7 +104,7 @@ interface CreateBondModalProps {
           "0x0000000000000000000000000000000000000000", // token
           parseEther(amount), // amount
           cooldown, // cooldownDuration
-          "0x00", // verifier TODO: properly generate this
+          verifier, // verifier
           0, // disputeAmount TODO actual secure values
           0 // disputeLiveness TODO actual secure values
         ],

@@ -11,6 +11,7 @@ import BondActionActive from "../components/BondActionActive";
 import BondActionCoolingDown from "../components/BondActionCoolingDown";
 import BondActionCooledDown from "../components/BondActionCooledDown";
 import BondActionWithdrawn from "../components/BondActionWithdrawn";
+import useBond from "../hooks/useBond";
 
 function returnBondAction(bondId: number, bondState: "cooledDown" | "coolingDown" | "active" | "withdrawn", hasOpenLoan: boolean) {
 
@@ -36,6 +37,10 @@ const ManageBond = () => {
   if (!bondId) {
     return <Container>Invalid bond id</Container>;
   }
+
+  const bondData = useBond(Number(bondId));
+
+  console.log(bondData.data);
 
   const bond = {
     id: 1,
