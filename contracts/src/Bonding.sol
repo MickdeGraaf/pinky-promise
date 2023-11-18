@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 contract Bonding {
     struct Bond {
+      address owner;
         address token;
         uint256 amount;
         uint256 cooldownDuration;
