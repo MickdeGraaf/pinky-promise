@@ -11,7 +11,7 @@ export const HeaderMenu = () => {
                     <Box>🤙 Pinky Promise</Box>
                     <Box>
                         <ChakraLink as={ReactRouterLink} to='/'>
-                            Borrow
+                            Bonds
                         </ChakraLink>
                     </Box>
                     <Box>

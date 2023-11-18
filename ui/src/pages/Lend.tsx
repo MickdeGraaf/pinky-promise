@@ -1,8 +1,16 @@
-import react from 'react';
+import Container from "../components/Container";
 
 const Lend = () => {
     return (
-        <div>Lend</div>
+        <Container>
+            {/* 
+                TODO
+                - Table of all loan requests
+                - Allow filter per chain
+                - Allow filter per token
+                - Overview of outstanding loans
+            */}
+        </Container>
     )
 };
 
