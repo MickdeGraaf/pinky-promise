@@ -5,7 +5,6 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Bonding {
-
     // struct Verifier {
     //     address addressOnDestChain;
     //     address tokenOnDestChain; // address(0) for Native on dest chain
