@@ -118,6 +118,31 @@ contract OrderFulfiller {
         return outstandingOrders;
     }
 
+    //get orders that are not oustanding and therefore "valid"
+    function getValidOrders() external view returns (uint256[] memory){
+        uint256 _len = orders.length;
+        uint256 _validOrdersLen = 0;
+        for (uint256 i = 0; i < _len;) {
+            if (!isOutstanding(i)) {
+                _validOrdersLen++;
+            }
+            unchecked {
+                i++;
+            }
+        }
+        uint256[] memory validOrders = new uint256[](_validOrdersLen);
+        _validOrdersLen = 0;
+        for (uint256 i = 0; i < _len;) {
+            if (!isOutstanding(i)) {
+                validOrders[_validOrdersLen++] = i;
+            }
+            unchecked {
+                i++;
+            }
+        }
+        return validOrders;
+    }
+
     function ordersLength() external view returns (uint256) {
         return orders.length;
     }
