@@ -31,6 +31,7 @@ const Bonds = () => {
 
     return (
         <Container>
+            <Button onClick={onClickCreateBond}>+ Create bond</Button>
         {bonds.length == 0 ? (
             <Center>
                 <Text align={"center"}>You don't have a bond yet. <br></br> <Button onClick={onClickCreateBond}>Create one</Button></Text>     

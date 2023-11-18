@@ -5,6 +5,30 @@ import { Box, Flex, Heading, Stack, StackDivider, Text } from "@chakra-ui/layout
 import { formatEther } from "viem";
 import { Button } from "@chakra-ui/button";
 import RequestLoanForm from "../components/RequestLoanForm";
+import RepayLoanForm from "../components/RepayLoanForm";
+import { useState } from "react";
+import BondActionActive from "../components/BondActionActive";
+import BondActionCoolingDown from "../components/BondActionCoolingDown";
+import BondActionCooledDown from "../components/BondActionCooledDown";
+import BondActionWithdrawn from "../components/BondActionWithdrawn";
+
+function returnBondAction(bondId: number, bondState: "cooledDown" | "coolingDown" | "active" | "withdrawn", hasOpenLoan: boolean) {
+
+  if (hasOpenLoan) {
+    return <Button disabled size="lg" width={"100%"}>Repay your loans first</Button>
+  }
+
+  switch(bondState) {
+    case "active":
+      return <BondActionActive bondId={bondId} />;
+    case "coolingDown":
+      return <BondActionCoolingDown bondId={bondId} />;
+    case "cooledDown":
+      return <BondActionCooledDown bondId={bondId} />;
+    case "withdrawn":
+      return <BondActionWithdrawn bondId={bondId} />;
+  }
+}
 
 const ManageBond = () => {
   const { bondId } = useParams();
@@ -20,6 +44,11 @@ const ManageBond = () => {
   };
 
   const hasOpenLoan = false;
+
+  const bondState : "cooledDown" | "coolingDown" | "active" | "withdrawn" = "active";
+
+  const bondAction = returnBondAction(Number(bondId), bondState, hasOpenLoan);
+
 
   return (
     <Container>
@@ -50,9 +79,7 @@ const ManageBond = () => {
                 </Box>
               </Stack>
 
-              <Button mt="6" size="lg" width="100%">
-                Initiate Withdraw
-              </Button>
+              {bondAction}
             </CardBody>
           </Card>
         </Flex>
@@ -61,7 +88,7 @@ const ManageBond = () => {
         <Flex width={"30%"}>
           <Card width={"100%"}> 
             {hasOpenLoan ? (
-                <>Repay</>
+                <RepayLoanForm bondId={Number(bondId)} />
             ) : (
                 <RequestLoanForm bondId={Number(bondId)} />
             )}
