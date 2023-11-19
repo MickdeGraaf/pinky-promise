@@ -14,4 +14,4 @@ Holders of tokens can often not earn a good yield and the commitment of staking 
 PinkyPromise allows market makers and solvers to enter commitments and loans using a single collateral on a single chain. Allowing them to access instant liquidity to fulfill intents and market make on any chain.
 
 
-Created by Pedro and Mick ❤️
+Created by Pedro and Mick 
