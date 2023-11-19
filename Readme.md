@@ -18,3 +18,12 @@ On the destination chain, orders are settled using the OrderFulfiller which can 
 
 The frontend is built in react using tools such as: wagmi, rainbowkit, viem, chakra-ui. It currently runs all of the functionality for demonstration purposes but some specialised roles would be run by specialised scripts/nodes in production.
 For example, the verification process and discussions can be improved by running a bot to check for outstanding loans and getting the penalty rewards.
+
+```
+forge create --rpc-url <rpc> --private-key <pk> src/Bonding.sol:Bonding --verify --etherscan-api-key <key> —constructor-args <oov3>
+```
+
+```
+OrderFulfiller
+forge create --rpc-url <rpc> --private-key <pk> src/OrderFulfiller.sol:Orderfulfiller --verify --etherscan-api-key <key>
+```
