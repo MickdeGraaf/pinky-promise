@@ -115,7 +115,6 @@ contract Bonding {
 
     /// @dev disputes the fact that the user has paid back the order fulfiller
     function callBS(uint256 bondId, address token, uint256 amount, uint256 liveness) external {
-        require(cooldownEnd[bondId] > block.timestamp, "Bonding: not in cooldown");
         require(!isBlocked[bondId], "Bonding: BSCalling already in progress");
         require(liveness > MIN_LIVENESS && liveness < MAX_LIVENESS, "Bonding: invalid liveness");
         uint256 minAmount = oov3.getMinimumBond(token);
