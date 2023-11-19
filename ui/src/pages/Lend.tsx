@@ -12,10 +12,20 @@ import ChainName from "../components/ChainName";
 import DisputeOrderButton from "../components/DisputeOrderButton";
 import convertToOrder from "../utils/convertOrder";
 import FulfillOrderButton from "../components/FulfillOrderButton";
+import useExpiredLoans from "../hooks/useExpiredLoans";
+import { Order } from "../types/Order";
 
 const Lend = () => {
 
     const fillableLoans = useFillableLoans();
+    const expiredLoans = useExpiredLoans();
+    // const expiredLoans: Order[] = [];
+
+    console.log("expiredLoans");
+
+    console.log(expiredLoans);
+    
+    // const openLoans = useOpenLoans();
 
     return (
         <Container>
@@ -37,15 +47,15 @@ const Lend = () => {
                         </Tr>
                     </Thead>
                     <Tbody>
-                        {orders.map((order) => (
+                        {expiredLoans.map((order) => (
                             <Tr key={order.bondId}>
-                                <Td>{order.bondId}</Td>
+                                <Td>{Number(order.bondId)}</Td>
                                 <Td>{order.chainId}</Td>
                                 <Td>{truncateAddress(order.token)}</Td>
-                                <Td>{formatEther(BigInt(order.amount))}</Td>
-                                <Td>{formatEther(BigInt(order.repayAmount))}</Td>
-                                <Td>{formatUnixTimestamp(order.fulfillDeadline)}</Td>
-                                <Td><DisputeOrderButton order={convertToOrder(order)}/></Td>
+                                <Td>{formatEther(order.amount)}</Td>
+                                <Td>{formatEther(order.repayAmount)}</Td>
+                                <Td>{formatUnixTimestamp(Number(order.fulfillDeadline))}</Td>
+                                <Td><DisputeOrderButton order={order}/></Td>
                             </Tr>
                         ))}
                     </Tbody>
@@ -54,7 +64,7 @@ const Lend = () => {
                 
 
 
-            <Heading size="md">
+            {/* <Heading size="md">
                 Open Loans
             </Heading>
 
@@ -84,7 +94,7 @@ const Lend = () => {
                         ))}
                     </Tbody>
                 </Table>
-            </TableContainer>
+            </TableContainer> */}
 
 
             <Heading mt="12" size="md">Fulfillable loans</Heading>

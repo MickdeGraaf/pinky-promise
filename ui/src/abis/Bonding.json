@@ -3,6 +3,17 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_oov3",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "target",
         "type": "address"
       }
@@ -55,6 +66,19 @@
     ],
     "name": "EnterCooldown",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "MIN_LIVENESS",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [
@@ -137,6 +161,82 @@
         "type": "uint256"
       }
     ],
+    "name": "bscallHasBeenDisputed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "bscalls",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "bsCaller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "bondId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "time",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "bondId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "callBS",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "cooldownEnd",
     "outputs": [
       {
@@ -192,6 +292,32 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "defaultIdentifier",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "bondId",
+        "type": "uint256"
+      }
+    ],
+    "name": "dispute",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -240,6 +366,133 @@
           }
         ],
         "internalType": "struct Bonding.Bond",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "bondId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getBSCallerResult",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "bondId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getBSCallingResult",
+    "outputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "bool",
+                "name": "arbitrateViaEscalationManager",
+                "type": "bool"
+              },
+              {
+                "internalType": "bool",
+                "name": "discardOracle",
+                "type": "bool"
+              },
+              {
+                "internalType": "bool",
+                "name": "validateDisputers",
+                "type": "bool"
+              },
+              {
+                "internalType": "address",
+                "name": "assertingCaller",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "escalationManager",
+                "type": "address"
+              }
+            ],
+            "internalType": "struct OptimisticOracleV3Interface.EscalationManagerSettings",
+            "name": "escalationManagerSettings",
+            "type": "tuple"
+          },
+          {
+            "internalType": "address",
+            "name": "asserter",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "assertionTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "bool",
+            "name": "settled",
+            "type": "bool"
+          },
+          {
+            "internalType": "contract IERC20",
+            "name": "currency",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "expirationTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "bool",
+            "name": "settlementResolution",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "domainId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "identifier",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "bond",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "callbackRecipient",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "disputer",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct OptimisticOracleV3Interface.Assertion",
         "name": "",
         "type": "tuple"
       }
@@ -344,6 +597,25 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "isBlocked",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "bondId",
         "type": "uint256"
       }
@@ -357,6 +629,38 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "oov3",
+    "outputs": [
+      {
+        "internalType": "contract OptimisticOracleV3Interface",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "bondId",
+        "type": "uint256"
+      }
+    ],
+    "name": "settleAndGetBSCallerResult",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "successful",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

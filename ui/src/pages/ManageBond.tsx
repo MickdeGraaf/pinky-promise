@@ -101,8 +101,8 @@ const ManageBond = () => {
                   </Text>
                 </Box>
               </Stack>
-
-              {bondAction}
+              {/* TODO renable bondAction */}
+              {/* {bondAction} */}
             </CardBody>
           </Card>
         </Flex>
