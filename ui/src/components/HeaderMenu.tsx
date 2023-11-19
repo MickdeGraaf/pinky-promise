@@ -16,13 +16,13 @@ export const HeaderMenu = () => {
                     </Box>
                     <Box>
                         <ChakraLink as={ReactRouterLink} to='/lend'>
-                            Lend
+                            Orders
                         </ChakraLink>
                     </Box>
                     <Box>
-                        <ChakraLink as={ReactRouterLink} to='/verify'>
+                        {/* <ChakraLink as={ReactRouterLink} to='/verify'>
                             Verify
-                        </ChakraLink>
+                        </ChakraLink> */}
                     </Box>
                 </Stack>
             </Flex>
