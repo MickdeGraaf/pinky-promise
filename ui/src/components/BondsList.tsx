@@ -11,6 +11,8 @@ interface BondsListProps {
 }
 
 const BondsList: React.FC<BondsListProps> = ({ bonds }) => {
+    // TODO fetch bonds from events
+
     return (
         <TableContainer>
             <Table variant='simple'>
