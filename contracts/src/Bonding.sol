@@ -33,6 +33,7 @@ contract Bonding {
     event EnterCooldown(uint256 bondId, uint256 cooldownEnd);
 
     Bond[] public bonds;
+    mapping(address => uint256[]) public bondsOfOwner;
 
     uint64 public constant MIN_LIVENESS = 1 minutes;
 
@@ -83,6 +84,8 @@ contract Bonding {
             // ERC20
             SafeERC20.safeTransferFrom(IERC20(token), msg.sender, address(this), amount);
         }
+
+        bondsOfOwner[owner].push(bonds.length - 1);
     }
 
     function isCooldown(uint256 bondId) external view returns (bool) {
@@ -229,5 +232,22 @@ contract Bonding {
                 address(this)
             )
         );
+    }
+
+    function getBondIndexesOfOwner(address owner) external view returns (uint256[] memory) {
+        return bondsOfOwner[owner];
+    }
+
+    function getBondsOfOwner(address owner) external view returns (Bond[] memory bonds_, uint256[] memory indexes_) {
+        uint256[] memory indexes = bondsOfOwner[owner];
+        Bond[] memory _bonds = new Bond[](indexes.length);
+        for (uint256 i = 0; i < indexes.length; i++) {
+            _bonds[i] = bonds[indexes[i]];
+        }
+        return (_bonds, indexes);
+    }
+
+    function fetchBond(uint256 bondId) external view returns (Bond memory) {
+        return bonds[bondId];
     }
 }

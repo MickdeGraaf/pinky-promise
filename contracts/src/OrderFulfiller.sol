@@ -94,7 +94,7 @@ contract OrderFulfiller {
             && block.timestamp > orders[bondIdToOrderId[bondId]].repayDeadline;
     }
 
-    function getOutstandingOrders() external view returns (uint256[] memory) {
+    function getOutstandingOrders() public view returns (uint256[] memory) {
         uint256 _len = orders.length;
         uint256 _outstandingOrdersLen = 0;
         for (uint256 i = 0; i < _len;) {
@@ -116,6 +116,55 @@ contract OrderFulfiller {
             }
         }
         return outstandingOrders;
+    }
+
+    function getOutstandingOrderStructs() external view returns (Order[] memory) {
+        uint256[] memory outstandingOrders = getOutstandingOrders();
+        Order[] memory outstandingOrderStructs = new Order[](outstandingOrders.length);
+        for (uint256 i = 0; i < outstandingOrders.length;) {
+            outstandingOrderStructs[i] = orders[outstandingOrders[i]];
+            unchecked {
+                i++;
+            }
+        }
+        return outstandingOrderStructs;
+    }
+
+    //get orders that are not oustanding and therefore "valid"
+    function getValidOrders() public view returns (uint256[] memory) {
+        uint256 _len = orders.length;
+        uint256 _validOrdersLen = 0;
+        for (uint256 i = 0; i < _len;) {
+            if (!isOutstanding(i)) {
+                _validOrdersLen++;
+            }
+            unchecked {
+                i++;
+            }
+        }
+        uint256[] memory validOrders = new uint256[](_validOrdersLen);
+        _validOrdersLen = 0;
+        for (uint256 i = 0; i < _len;) {
+            if (!isOutstanding(i)) {
+                validOrders[_validOrdersLen++] = i;
+            }
+            unchecked {
+                i++;
+            }
+        }
+        return validOrders;
+    }
+
+    function getValidOrderStructs() external view returns (Order[] memory) {
+        uint256[] memory validOrders = getValidOrders();
+        Order[] memory validOrderStructs = new Order[](validOrders.length);
+        for (uint256 i = 0; i < validOrders.length;) {
+            validOrderStructs[i] = orders[validOrders[i]];
+            unchecked {
+                i++;
+            }
+        }
+        return validOrderStructs;
     }
 
     function ordersLength() external view returns (uint256) {

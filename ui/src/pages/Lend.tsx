@@ -5,9 +5,14 @@ import { truncateAddress } from "../utils/truncateAddress";
 import { formatEther } from "viem";
 import { formatUnixTimestamp } from "../utils/formatUnixTimestamp";
 import { Button } from "@chakra-ui/button";
-import { Heading } from "@chakra-ui/layout";
+import { Heading, Stack } from "@chakra-ui/layout";
+import { FormControl } from "@chakra-ui/form-control";
+import useFillableLoans from "../hooks/useFillableLoans";
 
 const Lend = () => {
+
+    const fillableLoans = useFillableLoans();
+
     return (
         <Container>
             <Heading size="md">
@@ -59,7 +64,7 @@ const Lend = () => {
                         </Tr>
                     </Thead>
                     <Tbody>
-                        {orders.map((order) => (
+                        {fillableLoans.map((order) => (
                             <Tr key={order.bondId}>
                                 <Td>{order.bondId}</Td>
                                 <Td>{order.chainId}</Td>

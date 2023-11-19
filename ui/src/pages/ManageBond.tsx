@@ -2,7 +2,7 @@ import { useParams } from "react-router";
 import Container from "../components/Container";
 import { Card, CardBody, CardHeader } from "@chakra-ui/card";
 import { Box, Flex, Heading, Stack, StackDivider, Text } from "@chakra-ui/layout";
-import { formatEther } from "viem";
+import { decodeAbiParameters, formatEther } from "viem";
 import { Button } from "@chakra-ui/button";
 import RequestLoanForm from "../components/RequestLoanForm";
 import RepayLoanForm from "../components/RepayLoanForm";
@@ -11,6 +11,9 @@ import BondActionActive from "../components/BondActionActive";
 import BondActionCoolingDown from "../components/BondActionCoolingDown";
 import BondActionCooledDown from "../components/BondActionCooledDown";
 import BondActionWithdrawn from "../components/BondActionWithdrawn";
+import useBond from "../hooks/useBond";
+import ChainName from "../components/ChainName";
+import useFormattedBond from "../hooks/useFormattedBond";
 
 function returnBondAction(bondId: number, bondState: "cooledDown" | "coolingDown" | "active" | "withdrawn", hasOpenLoan: boolean) {
 
@@ -37,18 +40,20 @@ const ManageBond = () => {
     return <Container>Invalid bond id</Container>;
   }
 
-  const bond = {
-    id: 1,
-    amount: 1n * 10n ** 18n,
-    destinationChainId: 1,
-  };
+  // const bondData = useBond(Number(bondId));
+
+  const bond = useFormattedBond(Number(bondId));
 
   const hasOpenLoan = false;
 
-  const bondState : "cooledDown" | "coolingDown" | "active" | "withdrawn" = "active";
+  const bondState : "cooledDown" | "coolingDown" | "active" | "withdrawn" = "coolingDown";
 
   const bondAction = returnBondAction(Number(bondId), bondState, hasOpenLoan);
 
+
+  if(!bond) {
+    return <Container>Loading</Container>;
+  }
 
   return (
     <Container>
@@ -74,7 +79,25 @@ const ManageBond = () => {
                     Cooldown
                   </Heading>
                   <Text pt="2" fontSize="sm">
-                    6 hours
+                    {Number(bond.cooldownDuration)} seconds
+                  </Text>
+                </Box>
+
+                <Box>
+                  <Heading size="xs" textTransform="uppercase">
+                    Token
+                  </Heading>
+                  <Text pt="2" fontSize="sm">
+                    {bond.token}
+                  </Text>
+                </Box>
+                
+                <Box>
+                  <Heading size="xs" textTransform="uppercase">
+                    DestinationChain
+                  </Heading>
+                  <Text pt="2" fontSize="sm">
+                    <ChainName chainId={bond.destinationChainId}/>
                   </Text>
                 </Box>
               </Stack>

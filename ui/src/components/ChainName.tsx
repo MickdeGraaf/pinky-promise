@@ -9,6 +9,12 @@ const ChainName: React.FC<ChainNameProps> = ({ chainId }) => {
     // @ts-ignore
     const chain = extractChain({chains, id: chainId });
 
+    if(chain == undefined) {
+        return (
+            "Unknown Chain"
+        )
+    }
+
     return (
         chain.name
     )
