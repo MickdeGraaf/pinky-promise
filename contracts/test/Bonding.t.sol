@@ -15,11 +15,12 @@ contract BondingTestMainnet is Test {
     //weth on mainnet
     address public weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     uint256 AMOUNT = 1e18;
+    address MAINNET_OOV3 = 0xfb55F43fB9F48F63f9269DB7Dde3BbBe1ebDC0dE;
 
     function setUp() public {
         string memory MAINNET_RPC_URL = vm.envString("MAINNET_RPC_URL");
         vm.createSelectFork(MAINNET_RPC_URL);
-        bonding = new Bonding();
+        bonding = new Bonding(MAINNET_OOV3);
     }
 
     function testCreateBonding() public {
@@ -49,7 +50,7 @@ contract BondingTestMainnet is Test {
             address _token,
             uint256 _amount,
             uint256 _cooldownDuration,
-            bytes memory _verifier,
+            ,
             uint256 _disputeAmount,
             uint256 _disputeLiveness
         ) = bonding.bonds(bonding.getBondsLength() - 1);
@@ -90,7 +91,7 @@ contract BondingTestMainnet is Test {
             address _token,
             uint256 _amount,
             uint256 _cooldownDuration,
-            bytes memory _verifier,
+            ,
             uint256 _disputeAmount,
             uint256 _disputeLiveness
         ) = bonding.bonds(bonding.getBondsLength() - 1);

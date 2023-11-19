@@ -7,11 +7,8 @@ import {OptimisticOracleV3Interface} from "./interfaces/OptimisticOracleV3Interf
 
 contract Bonding {
     // struct Verifier {
-    //     address addressOnDestChain;
-    //     address tokenOnDestChain; // address(0) for Native on dest chain
-    //     uint256 value;
     //     uint256 chainId;
-    //    address orderFulfillerAddress;
+    //     address addressOnDestChain;
     // }
 
     struct Bond {
@@ -25,32 +22,39 @@ contract Bonding {
         uint256 disputeLiveness;
     }
 
+    struct BSCall {
+        address bsCaller; // address of the bscaller
+        address token; // token the bscaller locks to callBS
+        uint256 amount; // amount the bscaller locks to callBS
+        uint256 bondId; // bondId the bscaller is calling BS on
+        uint256 time;
+    }
+
     event EnterCooldown(uint256 bondId, uint256 cooldownEnd);
 
     Bond[] public bonds;
 
-    uint256 public constant MIN_LIVENESS = 1 minutes;
-    uint256 public constant MAX_LIVENESS = 10 minutes ;
+    uint64 public constant MIN_LIVENESS = 1 minutes;
 
     bytes32 public constant defaultIdentifier = "ASSERT_TRUTH";
     // Create an Optimistic oracle instance at the deployed address on Görli.
-    OptimisticOracleV3Interface public oo;
+    OptimisticOracleV3Interface public oov3;
     //bondId => timestamp
     mapping(uint256 => uint256) public cooldownEnd;
     //bondId => is dispute successful
     mapping(uint256 => bool) public isBlocked;
+    //bondId => bscall
+    mapping(uint256 => BSCall) public bscalls;
+    //bondId => bool
+    mapping(uint256 => bool) public bscallHasBeenDisputed;
 
     modifier onlyOwner(uint256 bondId) {
         require(msg.sender == bonds[bondId].owner, "Bonding: not owner");
         _;
     }
 
-    // todo: this is passed in the deployer script
-    // Create an Optimistic Oracle V3 instance at the deployed address on Görli.
-    OptimisticOracleV3Interface oov3 = OptimisticOracleV3Interface(0x9923D42eF695B5dd9911D05Ac944d4cAca3c4EAB);
-
-    constructor(address _oo) {
-        oo = OptimisticOracleV3Interface(_oo);
+    constructor(address _oov3) {
+        oov3 = OptimisticOracleV3Interface(_oov3);
     }
 
     function createBond(
@@ -96,9 +100,10 @@ contract Bonding {
     function withdraw(uint256 bondId) external onlyOwner(bondId) {
         require(cooldownEnd[bondId] < block.timestamp && cooldownEnd[bondId] > 0, "Bonding: still in cooldown");
 
-        settleAndGetDisputorResult();
+        if (isBlocked[bondId]) {
+            settleAndGetBSCallerResult(bondId);
+        }
 
-        require(!isBlocked[bondId], "Bonding: dispute in progress");
         Bond storage bond = bonds[bondId];
         if (address(bond.token) == address(0)) {
             // ETH
@@ -114,80 +119,115 @@ contract Bonding {
     }
 
     /// @dev disputes the fact that the user has paid back the order fulfiller
-    function callBS(uint256 bondId, address token, uint256 amount, uint256 liveness) external {
+    function callBS(uint256 bondId, uint256 amount) external {
         require(!isBlocked[bondId], "Bonding: BSCalling already in progress");
-        require(liveness > MIN_LIVENESS && liveness < MAX_LIVENESS, "Bonding: invalid liveness");
+        address token = bonds[bondId].token;
         uint256 minAmount = oov3.getMinimumBond(token);
-        require(amount >= minAmount, "Bonding: amount too low");
-        SafeERC20.safeTransferFrom(IERC20(token), msg.sender, address(this), amount);
-        SafeERC20.safeApprove(IERC20(token), address(oov3), amount);
+        require(amount >= minAmount && amount < bonds[bondId].amount, "Bonding: amount too low");
 
-        _assertTruth(bondId, token, amount, liveness);
+        SafeERC20.safeTransferFrom(IERC20(token), msg.sender, address(this), amount);
+        SafeERC20.safeIncreaseAllowance(IERC20(token), address(oov3), amount);
+
+        _assertTruth(bondId);
         isBlocked[bondId] = true;
+
+        uint64 time = uint64(block.timestamp);
+        bscalls[bondId] = BSCall(msg.sender, token, amount, bondId, time);
     }
 
-    function _getBSCallingAncillaryData(uint256 bondId) internal returns (bytes memory bsCallingAncillaryData) {
+    function _getBSCallingAncillaryData(uint256 bondId) internal view returns (bytes memory bsCallingAncillaryData) {
         Bond storage bond = bonds[bondId];
 
-        (address addressOnDestChain, /* address */, /* uint256 */, uint256 chainId, address orderFulfillerAddress) =
-            abi.decode(bond.verifier, (address, address, uint256, uint256, address));
+        (uint256 chainId, address destinationContractAddress) = abi.decode(bond.verifier, (uint256, address));
         // Bonding bscaller is arguing the promisor hasnt paid back the order fulfiller.
         // If he hasnt, this statement returns true.
-        bsCallingAncillaryData = bytes(
+        bsCallingAncillaryData = abi.encodePacked(
             "Function call isOutstanding(%s) from contract with address %s on chain %s is returning true.",
             bondId,
-            orderFulfillerAddress,
+            destinationContractAddress,
             chainId
         );
     }
 
-    // todo: set custom token, custom amounts, custom dispute time. We will have to pull funds from bscaller
     // This is called by the bscaller. He will have to lock an amount to open the bscalling.
     // if no one disputes back, the bscaller will receive the bond money plus the promisor money
-    function _assertTruth(uint256 bondId, address token, uint256 liveness) internal {
-        assertedClaim = _getBSCallingAncillaryData(bondId);
-        // assertionId = oov3.assertTruthWithDefaults(assertedClaim, address(this));
+    function _assertTruth(uint256 bondId) internal {
+        bytes memory assertedClaim = _getBSCallingAncillaryData(bondId);
+        Bond memory bond = bonds[bondId];
+        address token = bond.token;
+        BSCall memory bscall = bscalls[bondId];
 
         oov3.assertTruth(
-                assertedClaim,
-                asserter, // asserter
-                address(0), // callbackRecipient
-                address(0), // escalationManager
-                liveness,
-                IERC20(token),
-                amount,
-                defaultIdentifier,
-                bytes32(0)
-            );
+            assertedClaim,
+            address(this), // asserter
+            address(0), // callbackRecipient
+            address(0), // escalationManager
+            MIN_LIVENESS,
+            IERC20(token),
+            bscall.amount,
+            defaultIdentifier,
+            bytes32(0)
+        );
     }
 
     // this is called by the promisor. He will have the bscaller's bond money if the promisor has in fact paid back the order fulfiller.
-    function dispute() external {
-        // todo: where is this function in the oov3?
+    function dispute(uint256 bondId) external {
+        require(isBlocked[bondId], "Bonding: no BSCalling in progress");
+        Bond memory bond = bonds[bondId];
+        BSCall memory bscall = bscalls[bondId];
+
+        SafeERC20.safeIncreaseAllowance(IERC20(bond.token), address(oov3), bscall.amount);
+        //this contract is the one holding the promisor's funds. So, this contract disputes the bscaller's claim on behalf of the user.
+        oov3.disputeAssertion(_getAssertionId(bondId), address(this));
+        bscallHasBeenDisputed[bondId] = true;
     }
 
     // This is called by the withdraw function and by the bscaller to claim his rewards.
     // It reverts if there's a dispute in place or if the dispute period has not passed.
     // If there's no dispute, it will give the money to the bscaller.
     function settleAndGetBSCallerResult(uint256 bondId) public returns (bool successful) {
-        successful = oov3.settleAndGetAssertionResult(assertionId);
-        if(successful) {
-          //todo: get money from oov3
-          //todo: give money to bscaller
-        }
-        else{ isBlocked[bondId] = false;
-          //todo: get money back from oov3
-          //todo: give money back to bscaller disputor 
+        successful = oov3.settleAndGetAssertionResult(_getAssertionId(bondId));
+        if (successful) {
+            //give money to bscaller
+        } else {
+            //give bscaller money to promisor
+            if (bscallHasBeenDisputed[bondId]) {
+                //give bscaller money to promisor plus the amount used to dispute the bscaller
+                bonds[bondId].amount += bscalls[bondId].amount * 2;
+                bscallHasBeenDisputed[bondId] = false;
+            }
+            bonds[bondId].amount += bscalls[bondId].amount;
+            isBlocked[bondId] = false;
+            delete bscalls[bondId];
         }
     }
 
     // Just return the assertion result. Can only be called once the assertion has been settled.
-    function getBSCallerResult() public view returns (bool) {
-        return oov3.getAssertionResult(assertionId);
+    function getBSCallerResult(uint256 bondId) public view returns (bool) {
+        return oov3.getAssertionResult(_getAssertionId(bondId));
     }
 
     //Return the dispution result
-    function getBSCallingResult() public view returns (OptimisticOracleV3Interface.Assertion memory) {
-        return oov3.getAssertion(assertionId);
+    function getBSCallingResult(uint256 bondId) public view returns (OptimisticOracleV3Interface.Assertion memory) {
+        return oov3.getAssertion(_getAssertionId(bondId));
+    }
+
+    function _getAssertionId(uint256 bondId) internal view returns (bytes32) {
+        bytes memory assertedClaim = _getBSCallingAncillaryData(bondId);
+        BSCall memory bscall = bscalls[bondId];
+
+        return keccak256(
+            abi.encode(
+                assertedClaim,
+                bscall.amount,
+                bscall.time,
+                MIN_LIVENESS,
+                bonds[bondId].token,
+                address(0),
+                address(0),
+                defaultIdentifier,
+                address(this)
+            )
+        );
     }
 }
