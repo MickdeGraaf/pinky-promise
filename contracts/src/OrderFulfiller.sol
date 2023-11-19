@@ -131,7 +131,7 @@ contract OrderFulfiller {
     }
 
     //get orders that are not oustanding and therefore "valid"
-    function getValidOrders() public view returns (uint256[] memory){
+    function getValidOrders() public view returns (uint256[] memory) {
         uint256 _len = orders.length;
         uint256 _validOrdersLen = 0;
         for (uint256 i = 0; i < _len;) {
