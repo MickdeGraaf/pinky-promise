@@ -24,15 +24,17 @@ import {
 } from '@rainbow-me/rainbowkit';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 
-// import { alchemyProvider } from 'wagmi/providers/alchemy';
+import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import Root from './Root.tsx'
+
 
 const { chains, publicClient } = configureChains(
   chainsConfig,
   [
     // alchemyProvider({ apiKey: process.env.ALCHEMY_ID }),
-    publicProvider()
+    alchemyProvider({ apiKey: "Or2LuQsubZ-IDPClDCnhUB0fN1uKLrdr" }),
+    publicProvider(),
   ]
 );
 

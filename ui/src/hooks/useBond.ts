@@ -7,7 +7,7 @@ const useBond = (bondId: number) => {
         abi: BondingABI,
         address: contracts.bonding as `0x${string}`,
         chainId: contracts.bondingChainId,
-        functionName: "bonds",
+        functionName: "fetchBond",
         args: [bondId],
         watch: true,
     });

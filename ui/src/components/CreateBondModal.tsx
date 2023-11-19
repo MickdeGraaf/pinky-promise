@@ -132,6 +132,8 @@ interface CreateBondModalProps {
             <FormControl mb={3}>
                 <FormLabel>Cooldown</FormLabel>
                 <Select value={cooldown} onChange={handleCooldownChange} placeholder="Select duration">
+                    <option value="0">No cooldown</option>
+                    <option value="60">1 minute</option>
                     <option value="3600">1 hour</option>
                     <option value="21600">6 hours</option>
                     <option value="43200">12 hours</option>
