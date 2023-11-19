@@ -30,6 +30,7 @@ const useExpiredLoans = () => {
 //   token: "0x0000000000000000000000000000000000000000",
 // };
 
+// @ts-ignore
     const orders: Order[] = data.data ? data.data.map((item: any): Order => {
         return {
             bondId: item.bondId,
