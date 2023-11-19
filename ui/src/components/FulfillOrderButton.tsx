@@ -4,6 +4,7 @@ import { useAccount, useNetwork } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { switchNetwork, writeContract } from "@wagmi/core";
 import contracts from "../config/contracts";
+import FulfillerABI from "../abis/Fulfiller.json";
 import { parseEther } from "viem";
 
 interface FulfillOrderProps {
@@ -41,15 +42,38 @@ const FulfillOrder = ({ order }: FulfillOrderProps) => {
             return;
         }
 
-        // const tx = await writeContract({
-        //     address: targetContract,
-        //     chainId: order.chainId,
-        //     value: parseEther(order.amount),
-        // });
+        // function fulfillOrder(
+        //     address fulfiller,
+        //     uint256 bondId,
+        //     address recipient,
+        //     address token,
+        //     uint256 amount,
+        //     uint256 fulfillDeadline,
+        //     uint256 repayDeadline
+        // )
+
+        const tx = await writeContract({
+            address: targetContract,
+            chainId: order.chainId,
+            abi: FulfillerABI,
+            functionName: "fulfillOrder",
+            args: [
+                address,
+                order.bondId,
+                order.recipient,
+                order.token,
+                order.amount,
+                order.fulfillDeadline,
+                order.repayDeadline,
+            ],
+            value: order.amount,
+        });
+
+        alert(`tx send with hash ${tx.hash}`);
     }
 
     return (
-        <Button>
+        <Button onClick={handleFulfillOrder}>
             Fulfill Order
         </Button>
     )

@@ -24,16 +24,7 @@ interface CreateBondModalProps {
     const [chainId, setChainId] = useState("1"); // chain id
     const { address, isConnecting, isDisconnected } = useAccount()
     const connectModal = useConnectModal();
-    const { chain, chains } = useNetwork()
-  //   function createBond(
-  //     address owner,
-  //     address token,
-  //     uint256 amount,
-  //     uint256 cooldownDuration,
-  //     bytes memory verifier,
-  //     uint256 disputeAmount,
-  //     uint256 disputeLiveness
-  // )
+    const { chain, chains } = useNetwork();
 
     const handleCooldownChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
       setCooldown(Number(event.target.value));
@@ -70,16 +61,6 @@ interface CreateBondModalProps {
           chainId: contracts.bondingChainId,
         });
       }
-      
-    //   function createBond(
-    //     address owner,
-    //     address token,
-    //     uint256 amount,
-    //     uint256 cooldownDuration,
-    //     bytes memory verifier,
-    //     uint256 disputeAmount,
-    //     uint256 disputeLiveness
-    // )
     
       // abi encode verifier
       // @ts-ignore
@@ -91,9 +72,6 @@ interface CreateBondModalProps {
       }
       
       const verifier = encodeAbiParameters([{name: "x", type: "uint256"}, {name: "y", type: "address"}], [BigInt(chainId), destinationContract]);
-      // const verifier = encodeAbiParameters({x: "uint256", y: "address"}, [BigInt(chainId), destinationContract]);
-      // const verifier = encodePacked(["uint256", "address"], [BigInt(chainId), destinationContract]);
-      console.log(verifier);
       // Send tx
       const tx = await writeContract({
         address: contracts.bonding as `0x${string}`,
