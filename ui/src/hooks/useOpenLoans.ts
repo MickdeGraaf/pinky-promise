@@ -1,5 +1,6 @@
 import { useContractRead } from "wagmi"
 
+// @ts-ignore
 import FulfillerABI from "../abi/Fulfiller.json"
 import contracts from "../config/contracts";
 import demo from "../config/demo";
