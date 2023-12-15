@@ -4,34 +4,9 @@ pragma solidity ^0.8.13;
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {OptimisticOracleV3Interface} from "./interfaces/OptimisticOracleV3Interface.sol";
+import {IBonding} from "./interfaces/IBonding.sol";
 
-contract Bonding {
-    // struct Verifier {
-    //     uint256 chainId;
-    //     address addressOnDestChain;
-    // }
-
-    struct Bond {
-        address owner;
-        address token;
-        uint256 amount;
-        uint256 cooldownDuration;
-        bytes verifier; // Verifier encoded
-        // Uma params
-        uint256 disputeAmount;
-        uint256 disputeLiveness;
-    }
-
-    struct BSCall {
-        address bsCaller; // address of the bscaller
-        address token; // token the bscaller locks to callBS
-        uint256 amount; // amount the bscaller locks to callBS
-        uint256 bondId; // bondId the bscaller is calling BS on
-        uint256 time;
-    }
-
-    event EnterCooldown(uint256 bondId, uint256 cooldownEnd);
-
+contract Bonding is IBonding {
     Bond[] public bonds;
     mapping(address => uint256[]) public bondsOfOwner;
 
