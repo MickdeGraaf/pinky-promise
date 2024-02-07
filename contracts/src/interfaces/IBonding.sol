@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.20;
 
 import {OptimisticOracleV3Interface} from "./OptimisticOracleV3Interface.sol";
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.20;
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -88,22 +88,16 @@ contract OrderFulfiller is IOrderFulfiller{
     function getOutstandingOrders() public view returns (uint256[] memory) {
         uint256 _len = orders.length;
         uint256 _outstandingOrdersLen = 0;
-        for (uint256 i = 0; i < _len;) {
+        for (uint256 i = 0; i < _len;i++) {
             if (isOutstanding(i)) {
                 _outstandingOrdersLen++;
-            }
-            unchecked {
-                i++;
             }
         }
         uint256[] memory outstandingOrders = new uint256[](_outstandingOrdersLen);
         _outstandingOrdersLen = 0;
-        for (uint256 i = 0; i < _len;) {
+        for (uint256 i = 0; i < _len;i++) {
             if (isOutstanding(i)) {
                 outstandingOrders[_outstandingOrdersLen++] = i;
-            }
-            unchecked {
-                i++;
             }
         }
         return outstandingOrders;
@@ -112,11 +106,8 @@ contract OrderFulfiller is IOrderFulfiller{
     function getOutstandingOrderStructs() external view returns (Order[] memory) {
         uint256[] memory outstandingOrders = getOutstandingOrders();
         Order[] memory outstandingOrderStructs = new Order[](outstandingOrders.length);
-        for (uint256 i = 0; i < outstandingOrders.length;) {
+        for (uint256 i = 0; i < outstandingOrders.length; i++) {
             outstandingOrderStructs[i] = orders[outstandingOrders[i]];
-            unchecked {
-                i++;
-            }
         }
         return outstandingOrderStructs;
     }
@@ -125,22 +116,16 @@ contract OrderFulfiller is IOrderFulfiller{
     function getValidOrders() public view returns (uint256[] memory) {
         uint256 _len = orders.length;
         uint256 _validOrdersLen = 0;
-        for (uint256 i = 0; i < _len;) {
+        for (uint256 i = 0; i < _len;i++) {
             if (!isOutstanding(i)) {
                 _validOrdersLen++;
-            }
-            unchecked {
-                i++;
             }
         }
         uint256[] memory validOrders = new uint256[](_validOrdersLen);
         _validOrdersLen = 0;
-        for (uint256 i = 0; i < _len;) {
+        for (uint256 i = 0; i < _len;i++) {
             if (!isOutstanding(i)) {
                 validOrders[_validOrdersLen++] = i;
-            }
-            unchecked {
-                i++;
             }
         }
         return validOrders;
@@ -149,11 +134,8 @@ contract OrderFulfiller is IOrderFulfiller{
     function getValidOrderStructs() external view returns (Order[] memory) {
         uint256[] memory validOrders = getValidOrders();
         Order[] memory validOrderStructs = new Order[](validOrders.length);
-        for (uint256 i = 0; i < validOrders.length;) {
+        for (uint256 i = 0; i < validOrders.length;i++) {
             validOrderStructs[i] = orders[validOrders[i]];
-            unchecked {
-                i++;
-            }
         }
         return validOrderStructs;
     }
