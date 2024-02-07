@@ -7,21 +7,27 @@ import {OptimisticOracleV3Interface} from "./interfaces/OptimisticOracleV3Interf
 import {IBonding} from "./interfaces/IBonding.sol";
 
 contract Bonding is IBonding {
+
     Bond[] public bonds;
+
+    /// @dev owner => owned bonds
     mapping(address => uint256[]) public bondsOfOwner;
 
+    /// @dev minimum liveness for the dispute
     uint64 public constant MIN_LIVENESS = 1 minutes;
-
+    /// @dev UMA's OptimisticOracleV3 default identifier
     bytes32 public constant defaultIdentifier = "ASSERT_TRUTH";
-    // Create an Optimistic oracle instance at the deployed address on Görli.
+
+    /// @dev Optimistic oracle instance at the deployed address
     OptimisticOracleV3Interface public oov3;
-    //bondId => timestamp
+
+    /// @dev bondId => timestamp
     mapping(uint256 => uint256) public cooldownEnd;
-    //bondId => is dispute successful
+    /// @dev bondId => is dispute successful
     mapping(uint256 => bool) public isBlocked;
-    //bondId => bscall
+    /// @dev bondId => bscall
     mapping(uint256 => BSCall) public bscalls;
-    //bondId => bool
+    /// @dev bondId => bool
     mapping(uint256 => bool) public bscallHasBeenDisputed;
 
     modifier onlyOwner(uint256 bondId) {

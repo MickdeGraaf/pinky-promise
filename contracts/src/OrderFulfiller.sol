@@ -9,13 +9,13 @@ contract OrderFulfiller is IOrderFulfiller{
 
     Order[] public orders;
 
-    // bond id => order id
+    /// @dev bond id => order id
     mapping(uint256 => uint256) public bondIdToOrderId;
-    // bond id => fulfilled
+    /// @dev bond id => fulfilled
     mapping(uint256 => bool) public orderFulfilled;
-    // order id => repaid
+    /// @dev order id => repaid
     mapping(uint256 => bool) public orderRepaid;
-    // order id => fullfiller
+    /// @dev order id => fullfiller
     mapping(uint256 => address) public orderFulfiller;
 
     /// @dev fulfills the order
