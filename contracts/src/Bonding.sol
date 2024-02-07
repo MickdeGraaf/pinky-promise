@@ -153,7 +153,6 @@ contract Bonding is IBonding {
     function _assertTruth(uint256 bondId) internal {
         bytes memory assertedClaim = _getBSCallingAncillaryData(bondId);
         Bond memory bond = bonds[bondId];
-        address token = bond.token;
         BSCall memory bscall = bscalls[bondId];
 
         oov3.assertTruth(
@@ -162,7 +161,7 @@ contract Bonding is IBonding {
             address(0), // callbackRecipient
             address(0), // escalationManager
             MIN_LIVENESS,
-            IERC20(token),
+            IERC20(bond.token),
             bscall.amount,
             defaultIdentifier,
             bytes32(0)
