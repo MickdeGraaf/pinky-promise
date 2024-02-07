@@ -5,8 +5,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IOrderFulfiller} from "./interfaces/IOrderFulfiller.sol";
 
-contract OrderFulfiller is IOrderFulfiller{
-
+contract OrderFulfiller is IOrderFulfiller {
     Order[] public orders;
 
     /// @dev bond id => order id
@@ -28,9 +27,9 @@ contract OrderFulfiller is IOrderFulfiller{
         uint256 fulfillDeadline,
         uint256 repayDeadline
     ) external payable {
-        require(fulfillDeadline > block.timestamp, "OrderFulfiller: fulfill deadline in the past");
-        require(repayDeadline > fulfillDeadline, "OrderFulfiller: repay deadline before fulfill deadline");
-        require(!orderFulfilled[bondId], "OrderFulfiller: order already fulfilled");
+        if (fulfillDeadline < block.timestamp) revert FailedDeadline();
+        if (repayDeadline <= fulfillDeadline) revert InvalidDeadline();
+        if (orderFulfilled[bondId]) revert OrderAlreadyFulfilled();
 
         Order storage order = orders.push();
 
@@ -48,7 +47,7 @@ contract OrderFulfiller is IOrderFulfiller{
 
         if (address(token) == address(0)) {
             // Native
-            require(msg.value == amount, "OrderFulfiller: ETH amount mismatch");
+            if (msg.value != amount) revert InvalidAmount();
             payable(recipient).transfer(msg.value);
         } else {
             SafeERC20.safeTransferFrom(IERC20(token), msg.sender, address(this), amount);
@@ -59,11 +58,9 @@ contract OrderFulfiller is IOrderFulfiller{
     }
 
     function repay(uint256 bondId) external payable {
-        require(
-            block.timestamp < orders[bondIdToOrderId[bondId]].repayDeadline, "OrderFulfiller: repay deadline passed"
-        );
-        require(orderFulfilled[bondId], "OrderFulfiller: order not fulfilled");
-        require(!orderRepaid[bondId], "OrderFulfiller: order already repaid");
+        if (block.timestamp >= orders[bondIdToOrderId[bondId]].repayDeadline) revert FailedDeadline();
+        if (!orderFulfilled[bondId]) revert OrderNotFulfilled();
+        if (orderRepaid[bondId]) revert OrderAlreadyRepaid();
 
         uint256 orderId = bondIdToOrderId[bondId];
         address fulfiller = orderFulfiller[orderId];
@@ -71,11 +68,10 @@ contract OrderFulfiller is IOrderFulfiller{
         Order storage order = orders[orderId];
         if (address(order.token) == address(0)) {
             // Native
-            require(msg.value == order.amount, "OrderFulfiller: ETH amount mismatch");
+            if (msg.value != order.amount) revert InvalidAmount();
             payable(fulfiller).transfer(msg.value);
         } else {
-            SafeERC20.safeTransferFrom(IERC20(order.token), msg.sender, address(this), order.amount);
-            SafeERC20.safeTransferFrom(IERC20(order.token), address(this), fulfiller, order.amount);
+            SafeERC20.safeTransferFrom(IERC20(order.token), msg.sender, fulfiller, order.amount);
         }
         orderRepaid[bondIdToOrderId[bondId]] = true;
     }
@@ -88,14 +84,14 @@ contract OrderFulfiller is IOrderFulfiller{
     function getOutstandingOrders() public view returns (uint256[] memory) {
         uint256 _len = orders.length;
         uint256 _outstandingOrdersLen = 0;
-        for (uint256 i = 0; i < _len;i++) {
+        for (uint256 i = 0; i < _len; i++) {
             if (isOutstanding(i)) {
                 _outstandingOrdersLen++;
             }
         }
         uint256[] memory outstandingOrders = new uint256[](_outstandingOrdersLen);
         _outstandingOrdersLen = 0;
-        for (uint256 i = 0; i < _len;i++) {
+        for (uint256 i = 0; i < _len; i++) {
             if (isOutstanding(i)) {
                 outstandingOrders[_outstandingOrdersLen++] = i;
             }
@@ -116,14 +112,14 @@ contract OrderFulfiller is IOrderFulfiller{
     function getValidOrders() public view returns (uint256[] memory) {
         uint256 _len = orders.length;
         uint256 _validOrdersLen = 0;
-        for (uint256 i = 0; i < _len;i++) {
+        for (uint256 i = 0; i < _len; i++) {
             if (!isOutstanding(i)) {
                 _validOrdersLen++;
             }
         }
         uint256[] memory validOrders = new uint256[](_validOrdersLen);
         _validOrdersLen = 0;
-        for (uint256 i = 0; i < _len;i++) {
+        for (uint256 i = 0; i < _len; i++) {
             if (!isOutstanding(i)) {
                 validOrders[_validOrdersLen++] = i;
             }
@@ -134,7 +130,7 @@ contract OrderFulfiller is IOrderFulfiller{
     function getValidOrderStructs() external view returns (Order[] memory) {
         uint256[] memory validOrders = getValidOrders();
         Order[] memory validOrderStructs = new Order[](validOrders.length);
-        for (uint256 i = 0; i < validOrders.length;i++) {
+        for (uint256 i = 0; i < validOrders.length; i++) {
             validOrderStructs[i] = orders[validOrders[i]];
         }
         return validOrderStructs;

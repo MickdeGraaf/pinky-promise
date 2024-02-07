@@ -7,7 +7,6 @@ import {OptimisticOracleV3Interface} from "./interfaces/OptimisticOracleV3Interf
 import {IBonding} from "./interfaces/IBonding.sol";
 
 contract Bonding is IBonding {
-
     Bond[] public bonds;
 
     /// @dev owner => owned bonds
@@ -31,7 +30,7 @@ contract Bonding is IBonding {
     mapping(uint256 => bool) public bscallHasBeenDisputed;
 
     modifier onlyOwner(uint256 bondId) {
-        require(msg.sender == bonds[bondId].owner, "Bonding: not owner");
+        if (msg.sender != bonds[bondId].owner) revert NotOwner();
         _;
     }
 
@@ -48,6 +47,7 @@ contract Bonding is IBonding {
         uint256 disputeAmount,
         uint256 disputeLiveness
     ) external payable {
+        _createBondChecks(owner, amount, cooldownDuration, verifier, disputeAmount, disputeLiveness);
         Bond storage bond = bonds.push();
 
         bond.owner = owner;
@@ -60,35 +60,50 @@ contract Bonding is IBonding {
 
         if (address(token) == address(0)) {
             // ETH
-            require(msg.value == amount, "Bonding: ETH amount mismatch");
+            if (msg.value != amount) revert InvalidAmount();
         } else {
             // ERC20
             SafeERC20.safeTransferFrom(IERC20(token), msg.sender, address(this), amount);
         }
 
         bondsOfOwner[owner].push(bonds.length - 1);
+        emit CreateBond(bonds.length - 1, owner, token, amount);
+    }
+
+    function _createBondChecks(
+        address owner,
+        uint256 amount,
+        uint256 cooldownDuration,
+        bytes memory verifier,
+        uint256 disputeAmount,
+        uint256 disputeLiveness
+    ) internal pure {
+        if (owner == address(0)) revert AddressZero();
+        if (amount == 0 || cooldownDuration == 0 || disputeAmount == 0) revert AmountZero();
+        if (verifier.length == 0) revert VerifierEmpty();
+        if (disputeLiveness < MIN_LIVENESS) revert DisputeLivenessTooLow();
     }
 
     function isCooldown(uint256 bondId) external view returns (bool) {
-        require(bondId < bonds.length, "Bonding: invalid bondId");
+        if (bondId >= bonds.length) revert InvalidBond();
         return cooldownEnd[bondId] > 0 ? block.timestamp < cooldownEnd[bondId] : false;
     }
 
     function triggerCooldown(uint256 bondId) external onlyOwner(bondId) {
-        require(cooldownEnd[bondId] == 0, "Bonding: already in cooldown");
+        if (cooldownEnd[bondId] != 0) revert InvalidBond();
         cooldownEnd[bondId] = block.timestamp + bonds[bondId].cooldownDuration;
 
-        emit EnterCooldown(bondId, cooldownEnd[bondId]);
+        emit Cooldown(bondId, cooldownEnd[bondId]);
     }
 
     function withdraw(uint256 bondId) external onlyOwner(bondId) {
-        require(cooldownEnd[bondId] < block.timestamp && cooldownEnd[bondId] > 0, "Bonding: still in cooldown");
+        if (cooldownEnd[bondId] >= block.timestamp || cooldownEnd[bondId] == 0) revert BondInCooldown();
 
         if (isBlocked[bondId]) {
             settleAndGetBSCallerResult(bondId);
         }
 
-        Bond storage bond = bonds[bondId];
+        Bond memory bond = bonds[bondId];
         if (address(bond.token) == address(0)) {
             // ETH
             payable(msg.sender).transfer(bond.amount);
@@ -104,10 +119,10 @@ contract Bonding is IBonding {
 
     /// @dev disputes the fact that the user has paid back the order fulfiller
     function callBS(uint256 bondId, uint256 amount) external {
-        require(!isBlocked[bondId], "Bonding: BSCalling already in progress");
+        if (isBlocked[bondId]) revert DisputeInProgress();
         address token = bonds[bondId].token;
         uint256 minAmount = oov3.getMinimumBond(token);
-        require(amount >= minAmount && amount < bonds[bondId].amount, "Bonding: amount too low");
+        if (amount < minAmount || amount < bonds[bondId].amount) revert AmountLow();
 
         SafeERC20.safeTransferFrom(IERC20(token), msg.sender, address(this), amount);
         SafeERC20.safeIncreaseAllowance(IERC20(token), address(oov3), amount);
@@ -156,7 +171,7 @@ contract Bonding is IBonding {
 
     // this is called by the promisor. He will have the bscaller's bond money if the promisor has in fact paid back the order fulfiller.
     function dispute(uint256 bondId) external {
-        require(isBlocked[bondId], "Bonding: no BSCalling in progress");
+        if (!isBlocked[bondId]) revert NoDispute();
         Bond memory bond = bonds[bondId];
         BSCall memory bscall = bscalls[bondId];
 

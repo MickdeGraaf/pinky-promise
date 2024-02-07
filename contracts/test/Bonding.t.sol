@@ -35,9 +35,9 @@ contract BondingTestMainnet is Test {
             weth,
             AMOUNT,
             1 hours,
-            bytes(""), //mock verifier
-            0, //mock disputeAmount
-            0 //mock disputeLiveness
+            bytes("Mock Verifier"), //mock verifier
+            1, //mock disputeAmount
+            type(uint256).max //mock disputeLiveness
         );
         vm.stopPrank();
 
@@ -58,8 +58,8 @@ contract BondingTestMainnet is Test {
         assertEq(_token, weth);
         assertEq(_amount, AMOUNT);
         assertEq(_cooldownDuration, 1 hours);
-        assertEq(_disputeAmount, 0);
-        assertEq(_disputeLiveness, 0);
+        assertEq(_disputeAmount, 1);
+        assertEq(_disputeLiveness, type(uint256).max);
     }
 
     function testCreateBondingNativeToken() public {
@@ -69,18 +69,21 @@ contract BondingTestMainnet is Test {
 
         vm.startPrank(user1);
         IERC20(weth).approve(address(bonding), AMOUNT);
-        address(bonding).call{value: AMOUNT}(
+        (bool suceess,) = address(bonding).call{value: AMOUNT}(
             abi.encodeWithSelector(
                 bonding.createBond.selector,
                 user1,
                 address(0),
                 AMOUNT,
                 1 hours,
-                bytes(""), //mock verifier
-                0, //mock disputeAmount
-                0 //mock disputeLiveness
+                bytes("Mock Verifier"), //mock verifier
+                1, //mock disputeAmount
+                type(uint256).max //mock disputeLiveness
             )
         );
+        if (!suceess) {
+            revert("Bonding: createBond failed");
+        }
         vm.stopPrank();
 
         assertEq(bonding.getBondsLength(), 1);
@@ -99,8 +102,8 @@ contract BondingTestMainnet is Test {
         assertEq(_token, address(0));
         assertEq(_amount, AMOUNT);
         assertEq(_cooldownDuration, 1 hours);
-        assertEq(_disputeAmount, 0);
-        assertEq(_disputeLiveness, 0);
+        assertEq(_disputeAmount, 1);
+        assertEq(_disputeLiveness, type(uint256).max);
     }
 
     function testTriggerCooldown() public {
@@ -115,9 +118,9 @@ contract BondingTestMainnet is Test {
             weth,
             AMOUNT,
             1 hours,
-            bytes(""), //mock verifier
-            0, //mock disputeAmount
-            0 //mock disputeLiveness
+            bytes("Mock Verifier"), //mock verifier
+            1, //mock disputeAmount
+            type(uint256).max //mock disputeLiveness
         );
 
         vm.expectRevert();

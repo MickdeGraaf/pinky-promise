@@ -14,6 +14,15 @@ interface IOrderFulfiller {
         uint256 repayDeadline;
     }
 
+    /// @dev Errors
+    error FailedDeadline();
+    error InvalidDeadline();
+    error OrderAlreadyFulfilled();
+    error InvalidAmount();
+    error OrderNotFulfilled();
+    error OrderAlreadyRepaid();
+
+    /// @dev Events
     event OrderFulfilled(uint256 bondId, uint256 orderId);
 
     /// @dev fulfills the order
@@ -29,16 +38,16 @@ interface IOrderFulfiller {
 
     function repay(uint256 bondId) external payable;
 
-    function isOutstanding(uint256 bondId) external view returns (bool); 
+    function isOutstanding(uint256 bondId) external view returns (bool);
 
-    function getOutstandingOrders() external view returns (uint256[] memory); 
+    function getOutstandingOrders() external view returns (uint256[] memory);
 
-    function getOutstandingOrderStructs() external view returns (Order[] memory); 
+    function getOutstandingOrderStructs() external view returns (Order[] memory);
 
     //get orders that are not oustanding and therefore "valid"
-    function getValidOrders() external view returns (uint256[] memory); 
+    function getValidOrders() external view returns (uint256[] memory);
 
-    function getValidOrderStructs() external view returns (Order[] memory); 
+    function getValidOrderStructs() external view returns (Order[] memory);
 
-    function ordersLength() external view returns (uint256); 
+    function ordersLength() external view returns (uint256);
 }

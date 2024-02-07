@@ -23,7 +23,22 @@ interface IBonding {
         uint256 time;
     }
 
-    event EnterCooldown(uint256 bondId, uint256 cooldownEnd);
+    /// @dev Errors
+    error AddressZero();
+    error AmountZero();
+    error VerifierEmpty();
+    error DisputeLivenessTooLow();
+    error InvalidBond();
+    error BondInCooldown();
+    error DisputeInProgress();
+    error AmountLow();
+    error NoDispute();
+    error NotOwner();
+    error InvalidAmount();
+
+    /// @dev Events
+    event Cooldown(uint256 bondId, uint256 cooldownEnd);
+    event CreateBond(uint256 bondId, address indexed owner, address indexed token, uint256 amount);
 
     function createBond(
         address owner,
